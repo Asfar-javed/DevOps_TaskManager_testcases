@@ -64,7 +64,7 @@ pipeline {
                         fi
 
                         # Start application container
-                        docker run -d --name taskmanager-app -p ${APP_PORT}:8080 ${APP_IMAGE}
+                        docker run -d --name taskmanager-app -p ${APP_PORT}:8081 ${APP_IMAGE}
 
                         echo "⏳ Waiting for app to start..."
                         sleep 10
