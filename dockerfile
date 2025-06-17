@@ -1,7 +1,5 @@
-# Base image
 FROM python:3.11-slim
 
-# Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install Chromium and dependencies
@@ -14,26 +12,24 @@ RUN apt-get update && apt-get install -y \
     chromium \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 🔄 Download the matching ChromeDriver version (137)
-RUN CHROME_VERSION=$(chromium --version | grep -oP '\d+\.\d+\.\d+') && \
-    echo "Installing ChromeDriver for Chromium version $CHROME_VERSION" && \
-    wget -O /tmp/chromedriver.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/${CHROME_VERSION}/linux64/chromedriver-linux64.zip && \
+# ✅ Hardcoded version matching Chromium 137.0.7151.103
+RUN wget -O /tmp/chromedriver.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/137.0.7151.103/linux64/chromedriver-linux64.zip && \
     unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
     mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver && \
     chmod +x /usr/local/bin/chromedriver && \
     rm -rf /tmp/chromedriver.zip /usr/local/bin/chromedriver-linux64
 
-# Install Python dependencies
+# Install Python packages
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Set environment variables for Selenium
+# Set env for Selenium
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/local/bin/chromedriver
 
-# Set working dir and copy files
+# Set working directory
 WORKDIR /app
 COPY . .
 
-# Default command
+# Run test
 CMD ["python", "test.py"]
