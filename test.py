@@ -13,7 +13,7 @@ def create_driver():
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    driver.get("http://localhost:8080")  # Update to your actual app URL
+    driver.get("http://localhost:8081")  # Update to your actual app URL
     return driver
 
 
