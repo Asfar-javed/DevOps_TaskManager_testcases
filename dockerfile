@@ -3,8 +3,13 @@ FROM python:3.11-slim
 
 # Set environment variables to avoid prompts
 ENV DEBIAN_FRONTEND=noninteractive
+ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROMEDRIVER_PATH=/usr/lib/chromium/chromedriver
 
-# Install required system dependencies
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies including Chromium
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
@@ -27,19 +32,11 @@ RUN apt-get update && apt-get install -y \
     chromium-driver \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install pip packages
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Set working directory
-WORKDIR /app
-
-# Copy all source files into container
+# Copy files
 COPY . .
 
-# Set environment variable to avoid Chrome crash in Docker
-ENV CHROME_BIN=/usr/bin/chromium
-ENV CHROMEDRIVER_PATH=/usr/lib/chromium/chromedriver
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Default command to run your tests
-CMD ["python", "testcases/test.py"]
+# Run test script
+CMD ["python", "test.py"]
