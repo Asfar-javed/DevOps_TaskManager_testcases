@@ -4,16 +4,18 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-
 # Helper function to create the WebDriver instance
 def create_driver():
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless=new")  # Enable modern headless mode
+    options.binary_location = "/usr/bin/chromium"  # Path to Chromium browser
+    options.add_argument("--headless=new")         # Enable headless mode (modern)
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
+
+    # Initialize driver using webdriver-manager with proper service
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    driver.get("http://localhost:8081")  # Update to your actual app URL
+    driver.get("http://localhost:8081")  # Update this URL if your app runs on a different port
     return driver
 
 
