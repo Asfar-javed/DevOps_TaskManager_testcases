@@ -55,8 +55,18 @@ pipeline {
         stage('Run Tests Against App') {
             steps {
                 script {
+                    // Run tests and capture full output
                     sh "docker run --rm --network host ${TEST_IMAGE} > test-results.txt"
-                    env.TEST_RESULTS = readFile('test-results.txt')
+
+                    // Read full output
+                    def fullResults = readFile('test-results.txt')
+                    env.FULL_RESULTS = fullResults
+
+                    // Extract summary like:
+                    // Passed: 10
+                    // Failed: 0
+                    def matcher = fullResults =~ /(?m)^\s*Passed:\s*\d+.*\n\s*Failed:\s*\d+/
+                    env.TEST_SUMMARY = matcher ? matcher[0] : "Summary not found"
                 }
             }
         }
@@ -72,18 +82,19 @@ Hello,
 
 The Jenkins build completed **successfully**. 🎉
 
-🔹 Job Name: ${env.JOB_NAME}
-🔹 Build Number: ${env.BUILD_NUMBER}
+🔹 Job Name: ${env.JOB_NAME}  
+🔹 Build Number: ${env.BUILD_NUMBER}  
 🔹 Build URL: ${env.BUILD_URL}
 
-📋 Test Results:
-${env.TEST_RESULTS}
+📋 **Test Summary**:
+${env.TEST_SUMMARY}
 
 Regards,  
 Jenkins CI
                 """
             )
         }
+
         failure {
             emailext(
                 to: 'qasimalik@gmail.com, asfarali7172@gmail.com',
@@ -91,14 +102,14 @@ Jenkins CI
                 body: """
 Unfortunately, the Jenkins build **failed**. ❌
 
-🔹 Job Name: ${env.JOB_NAME}
-🔹 Build Number: ${env.BUILD_NUMBER}
+🔹 Job Name: ${env.JOB_NAME}  
+🔹 Build Number: ${env.BUILD_NUMBER}  
 🔹 Build URL: ${env.BUILD_URL}
 
-📋 Test Results (if any):
-${env.TEST_RESULTS ?: 'No results captured.'}
+📋 **Test Summary**:
+${env.TEST_SUMMARY ?: 'No summary available'}
 
-Please review logs for more info.
+Please check the console output for full logs.
 
 Regards,  
 Jenkins CI
