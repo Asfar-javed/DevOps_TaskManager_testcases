@@ -30,7 +30,7 @@ pipeline {
             steps {
                 dir('app') {
                     script {
-                        sh 'docker build -t ${APP_IMAGE} .'
+                        sh "docker build -t ${APP_IMAGE} ."
                     }
                 }
             }
@@ -40,7 +40,7 @@ pipeline {
             steps {
                 dir('tests') {
                     script {
-                        sh 'docker build -t ${TEST_IMAGE} .'
+                        sh "docker build -t ${TEST_IMAGE} ."
                     }
                 }
             }
@@ -69,12 +69,11 @@ pipeline {
     }
 
     post {
-    success {
-        emailext(
-            to: 'qasimalik@gmail.com',
-            cc: 'asfarali7172@gmail.com',
-            subject: "✅ Jenkins Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            body: """
+        success {
+            emailext(
+                to: 'qasimalik@gmail.com, asfarali7172@gmail.com',
+                subject: "✅ Jenkins Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
 Good news! The Jenkins build for your project was successful 🎉
 
 • Job Name: ${env.JOB_NAME}
@@ -82,15 +81,14 @@ Good news! The Jenkins build for your project was successful 🎉
 • Build URL: ${env.BUILD_URL}
 
 Check it out and continue the great work!
-            """
-        )
-    }
-    failure {
-        emailext(
-            to: 'qasimalik@gmail.com',
-            cc: 'asfarali7172@gmail.com',
-            subject: "❌ Jenkins Build Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            body: """
+                """
+            )
+        }
+        failure {
+            emailext(
+                to: 'qasimalik@gmail.com, asfarali7172@gmail.com',
+                subject: "❌ Jenkins Build Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
 Unfortunately, the Jenkins build failed 😞
 
 • Job Name: ${env.JOB_NAME}
@@ -98,9 +96,8 @@ Unfortunately, the Jenkins build failed 😞
 • Build URL: ${env.BUILD_URL}
 
 Please check the console output and logs for further details.
-            """
-        )
+                """
+            )
+        }
     }
-}
-
 }
