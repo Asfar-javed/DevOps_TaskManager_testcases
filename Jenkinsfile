@@ -55,18 +55,11 @@ pipeline {
         stage('Run Tests Against App') {
             steps {
                 script {
-                    // Run tests and capture full output
+                    // Save test output to a file
                     sh "docker run --rm --network host ${TEST_IMAGE} > test-results.txt"
 
-                    // Read full output
-                    def fullResults = readFile('test-results.txt')
-                    env.FULL_RESULTS = fullResults
-
-                    // Extract summary like:
-                    // Passed: 10
-                    // Failed: 0
-                    def matcher = fullResults =~ /(?m)^\s*Passed:\s*\d+.*\n\s*Failed:\s*\d+/
-                    env.TEST_SUMMARY = matcher ? matcher[0] : "Summary not found"
+                    // Read file content into environment variable
+                    env.FULL_RESULTS = readFile('test-results.txt')
                 }
             }
         }
@@ -86,8 +79,8 @@ The Jenkins build completed **successfully**. 🎉
 🔹 Build Number: ${env.BUILD_NUMBER}  
 🔹 Build URL: ${env.BUILD_URL}
 
-📋 **Test Summary**:
-${env.TEST_SUMMARY}
+📋 **Full Test Output**:
+${env.FULL_RESULTS}
 
 Regards,  
 Jenkins CI
@@ -106,10 +99,10 @@ Unfortunately, the Jenkins build **failed**. ❌
 🔹 Build Number: ${env.BUILD_NUMBER}  
 🔹 Build URL: ${env.BUILD_URL}
 
-📋 **Test Summary**:
-${env.TEST_SUMMARY ?: 'No summary available'}
+📋 **Full Test Output**:
+${env.FULL_RESULTS ?: 'No results captured.'}
 
-Please check the console output for full logs.
+Please check the console output for more info.
 
 Regards,  
 Jenkins CI
