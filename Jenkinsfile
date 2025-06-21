@@ -50,22 +50,8 @@ pipeline {
             steps {
                 script {
                     sh """
-                        # Stop and remove existing container
-                        if docker ps -q --filter "name=taskmanager-app"; then
-                            docker stop taskmanager-app || true
-                            docker rm taskmanager-app || true
-                        fi
-
-                        # Free port ${APP_PORT} if used
-                        USED_CONTAINER=\$(docker ps --filter "publish=${APP_PORT}" -q)
-                        if [ ! -z "\$USED_CONTAINER" ]; then
-                            docker stop \$USED_CONTAINER || true
-                            docker rm \$USED_CONTAINER || true
-                        fi
-
-                        # Start application container
+                        docker rm -f taskmanager-app || true
                         docker run -d --name taskmanager-app -p ${APP_PORT}:8081 ${APP_IMAGE}
-
                         echo "⏳ Waiting for app to start..."
                         sleep 10
                     """
@@ -76,10 +62,7 @@ pipeline {
         stage('Run Tests Against App') {
             steps {
                 script {
-                    sh """
-                        echo "🚀 Running tests against http://localhost:${APP_PORT} ..."
-                        docker run --rm --network host ${TEST_IMAGE}
-                    """
+                    sh "docker run --rm --network host ${TEST_IMAGE}"
                 }
             }
         }
@@ -87,10 +70,34 @@ pipeline {
 
     post {
         success {
-            echo '✅ Application and test pipeline completed successfully.'
+            emailext(
+                to: 'qasimalik@gmail.com',
+                subject: "✅ Jenkins Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+Good news! The Jenkins build for your project was successful 🎉
+
+• Job Name: ${env.JOB_NAME}
+• Build Number: ${env.BUILD_NUMBER}
+• Build URL: ${env.BUILD_URL}
+
+Check it out and continue the great work!
+                """
+            )
         }
         failure {
-            echo '❌ Pipeline failed.'
+            emailext(
+                to: 'qasimalik@gmail.com',
+                subject: "❌ Jenkins Build Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+Unfortunately, the Jenkins build failed 😞
+
+• Job Name: ${env.JOB_NAME}
+• Build Number: ${env.BUILD_NUMBER}
+• Build URL: ${env.BUILD_URL}
+
+Please check the console output and logs for further details.
+                """
+            )
         }
     }
 }
