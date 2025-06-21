@@ -29,7 +29,9 @@ pipeline {
         stage('Build Application Docker Image') {
             steps {
                 dir('app') {
-                    sh "docker build -t ${APP_IMAGE} ."
+                    script {
+                        sh 'docker build -t ${APP_IMAGE} .'
+                    }
                 }
             }
         }
@@ -37,35 +39,30 @@ pipeline {
         stage('Build Test Docker Image') {
             steps {
                 dir('tests') {
-                    sh "docker build -t ${TEST_IMAGE} ."
+                    script {
+                        sh 'docker build -t ${TEST_IMAGE} .'
+                    }
                 }
             }
         }
 
         stage('Start Application Container') {
             steps {
-                sh """
-                    docker rm -f taskmanager-app || true
-                    docker run -d --name taskmanager-app -p ${APP_PORT}:8081 ${APP_IMAGE}
-                    sleep 10
-                """
+                script {
+                    sh """
+                        docker rm -f taskmanager-app || true
+                        docker run -d --name taskmanager-app -p ${APP_PORT}:8081 ${APP_IMAGE}
+                        echo "⏳ Waiting for app to start..."
+                        sleep 10
+                    """
+                }
             }
         }
 
         stage('Run Tests Against App') {
             steps {
                 script {
-                    // Run tests and save to file
-                    sh "docker run --rm --network host ${TEST_IMAGE} > test-results.txt"
-
-                    // Read entire test output
-                    def allResults = readFile('test-results.txt')
-
-                    // Extract lines with "Passed" and "Failed"
-                    def summaryLines = allResults.readLines().findAll { it.contains('Passed') || it.contains('Failed') }
-
-                    // Save to environment variable
-                    env.TEST_SUMMARY = summaryLines.join('\n')
+                    sh "docker run --rm --network host ${TEST_IMAGE}"
                 }
             }
         }
@@ -73,47 +70,10 @@ pipeline {
 
     post {
         success {
-            emailext(
-                to: 'qasimalik@gmail.com, asfarali7172@gmail.com',
-                subject: "✅ Jenkins Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-Hello,
-
-The Jenkins build completed **successfully**. 🎉
-
-🔹 Job Name: ${env.JOB_NAME}  
-🔹 Build Number: ${env.BUILD_NUMBER}  
-🔹 Build URL: ${env.BUILD_URL}
-
-📋 **Test Summary**:
-${env.TEST_SUMMARY}
-
-Regards,  
-Jenkins CI
-                """
-            )
+            echo '✅ Application and test pipeline completed successfully.'
         }
-
         failure {
-            emailext(
-                to: 'qasimalik@gmail.com, asfarali7172@gmail.com',
-                subject: "❌ Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-Unfortunately, the Jenkins build **failed**. ❌
-
-🔹 Job Name: ${env.JOB_NAME}  
-🔹 Build Number: ${env.BUILD_NUMBER}  
-🔹 Build URL: ${env.BUILD_URL}
-
-📋 **Test Summary**:
-${env.TEST_SUMMARY ?: 'No test summary available.'}
-
-Please check Jenkins logs for details.
-
-Regards,  
-Jenkins CI
-                """
-            )
+            echo '❌ Pipeline failed due to test failure or build error.'
         }
     }
 }
