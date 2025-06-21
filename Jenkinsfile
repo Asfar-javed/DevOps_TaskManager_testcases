@@ -72,21 +72,28 @@ pipeline {
         success {
             emailext(
                 to: 'qasimalik@gmail.com, asfarali7172@gmail.com',
+                from: 'asfarali7172@gmail.com',
+                replyTo: 'asfarali7172@gmail.com',
                 subject: "✅ Jenkins Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
-Good news! The Jenkins build for your project was successful 🎉
+Hello,
+
+The Jenkins build for your project was successful 🎉
 
 • Job Name: ${env.JOB_NAME}
 • Build Number: ${env.BUILD_NUMBER}
 • Build URL: ${env.BUILD_URL}
 
-Check it out and continue the great work!
+Best regards,  
+Jenkins
                 """
             )
         }
         failure {
             emailext(
                 to: 'qasimalik@gmail.com, asfarali7172@gmail.com',
+                from: 'asfarali7172@gmail.com',
+                replyTo: 'asfarali7172@gmail.com',
                 subject: "❌ Jenkins Build Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
 Unfortunately, the Jenkins build failed 😞
@@ -95,7 +102,10 @@ Unfortunately, the Jenkins build failed 😞
 • Build Number: ${env.BUILD_NUMBER}
 • Build URL: ${env.BUILD_URL}
 
-Please check the console output and logs for further details.
+Please review the console output and logs for more details.
+
+Regards,  
+Jenkins
                 """
             )
         }
